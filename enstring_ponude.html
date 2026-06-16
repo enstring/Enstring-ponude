@@ -286,7 +286,7 @@ textarea{min-height:80px;resize:vertical;}
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
           <button class="btn btn-out" onclick="go(4)">← Natrag</button>
           <button class="btn btn-out" style="border-color:var(--pk);color:var(--pk);" onclick="saveToArchive('draft');alert('Ponuda spremljena u arhivu!')">💾 Spremi nacrt</button>
-          <button class="btn btn-out" style="background:var(--pl);border-color:var(--pl);color:var(--pk);" onclick="saveToArchive('sent');printDoc()">✉ Označi kao poslano + PDF</button>
+          <button class="btn btn-out" style="background:var(--pl);border-color:var(--pl);color:var(--pk);" onclick="markSentAndPrint()">✉ Označi kao poslano + PDF</button>
           <button class="btn btn-pk" onclick="printDoc()">⬇ Preuzmi PDF</button>
         </div>
       </div>
@@ -646,7 +646,8 @@ function getArchive(){
   catch(e){ return []; }
 }
 function saveArchive(arr){
-  localStorage.setItem('ens_archive', JSON.stringify(arr));
+  try{ localStorage.setItem('ens_archive', JSON.stringify(arr)); }
+  catch(e){ console.warn('Ne mogu spremiti arhivu:', e); }
 }
 
 function saveToArchive(status){
@@ -735,6 +736,11 @@ function resetApp(){
 }
 
 
+
+function markSentAndPrint(){
+  try { saveToArchive('sent'); } catch(e) { console.warn('Arhiva greška:', e); }
+  printDoc();
+}
 
 function printDoc(){
   const cN = document.getElementById('cN').value||'Klijent';
