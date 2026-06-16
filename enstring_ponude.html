@@ -92,6 +92,7 @@ textarea{min-height:80px;resize:vertical;}
 .prev-wrap{background:#fff;font-family:var(--font);border:1px solid var(--gr);border-radius:10px;overflow:hidden;}
 .prev-cover{background:#fff;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--pk);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .prev-cover-logo{height:34px;width:auto;}
+.prev-cover-logo-text{font-family:"Montserrat",sans-serif;font-size:28px;font-weight:700;color:var(--pk);letter-spacing:-0.5px;}
 .prev-cover-right{text-align:right;}
 .prev-cover-agency{font-size:11px;color:#666;line-height:1.8;}
 .prev-cover-agency strong{color:var(--pk);display:block;font-size:12px;margin-bottom:2px;}
@@ -113,6 +114,7 @@ textarea{min-height:80px;resize:vertical;}
 .prev-tbl tr.grp-r td{background:#f9f0f4;font-weight:700;font-size:10px;color:var(--pk);text-transform:uppercase;letter-spacing:.8px;padding:7px 16px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .prev-tbl tr:last-child td{border-bottom:none;}
 .prev-tbl tfoot tr.total-row td{background:var(--pk);color:#fff;padding:12px 16px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.prev-tbl tr.total-row td{background:var(--pk)!important;color:#fff!important;padding:12px 16px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:none;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 .pkg-total-amt{font-size:18px;font-weight:700;color:#fff;}
 .desc-mini-txt{font-size:11px;color:#888;margin-top:4px;line-height:1.55;font-weight:400;}
 .desc-max-txt{font-size:11px;color:#888;margin-top:4px;line-height:1.55;font-weight:400;}
@@ -554,8 +556,7 @@ function buildPreview(){
       pkgHTMLs+=`<div class="pkg-block">
         ${activePkgs.length>1?`<div class="pkg-block-header">${slot.naziv}</div>`:""}
         <table class="prev-tbl">
-          <tbody>${rows||'<tr><td style="color:#bbb;font-size:12px;">Nema stavki.</td></tr>'}</tbody>
-          <tfoot><tr class="total-row"><td><strong>Ukupno (bez PDV-a)</strong><span class="pkg-total-amt">${fp}</span></td></tr></tfoot>
+          <tbody>${rows||'<tr><td style="color:#bbb;font-size:12px;">Nema stavki.</td></tr>'}<tr class="total-row"><td><strong>Ukupno (bez PDV-a)</strong><span class="pkg-total-amt">${fp}</span></td></tr></tbody>
         </table>
       </div>`;
     });
