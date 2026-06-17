@@ -723,7 +723,8 @@ function showArchiveNotice(msg){
 
 async function saveViaAppsScript(row){
   // This will be the Apps Script Web App URL - set after deployment
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxCqE6MJdajsdHKIwA5YEh0lvHrukMOxxOvJEFmBL75N7YgTErUnum1jWxY6-pFfyDpA/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxCqE6MJdajsdHKIwA5YEh0lvHrukMOxxOvJEFmBL75N7YgTErUnum1jWxY6-pFfyDpA/exec';
+  if(!APPS_SCRIPT_URL){ 
     showArchiveNotice('✓ Lokalno spremljeno (Sheets arhiva nije konfigurirana)');
     renderArchive();
     return; 
