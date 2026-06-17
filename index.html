@@ -730,22 +730,56 @@ async function saveViaAppsScript(row){
     return; 
   }
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
+    const res = await fetch(APPS_SCRIPT_URL + '?callback=cb', {
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
       body: JSON.stringify({action:'append', sheetName:'Arhiva', row})
     });
-    showArchiveNotice('✓ Ponuda spremljena u arhivu!');
+    const result = await res.json();
+    if(result.success){
+      showArchiveNotice('✓ Ponuda spremljena u dijeljenu arhivu!');
+    } else {
+      showArchiveNotice('✓ Lokalno spremljeno');
+    }
     renderArchive();
   } catch(e){
+    console.warn('Fetch greška:', e);
     showArchiveNotice('✓ Lokalno spremljeno');
     renderArchive();
   }
 }
 
 
-function renderArchive(){
-  const archive = getArchive();
+async function renderArchive(){
   const el = document.getElementById('archive-list');
+  el.innerHTML='<div style="color:#999;font-size:13px;">Učitavam arhivu...</div>';
+  
+  // Try to load from Sheet first
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const sheetArchive = await res.json();
+    if(Array.isArray(sheetArchive) && sheetArchive.length > 0){
+      // Store sheet archive globally for access
+      window._sheetArchive = sheetArchive;
+      el.innerHTML = sheetArchive.map((a,i)=>`
+        <div style="border:1px solid var(--gr);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--pk);font-size:14px;">${a['Klijent']||'—'}</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">${a['Broj ponude']||'—'} · ${a['Datum ponude']||'—'} · <span style="color:${a['Status']==='Poslano'?'#2a7a45':'#888'}">${a['Status']||'—'}</span></div>
+            <div style="font-size:11px;color:#aaa;margin-top:3px;">${a['Paketi']||''}</div>
+            <div style="font-size:12px;font-weight:600;color:var(--pk);margin-top:3px;">${a['Iznos']||''}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="btn btn-out" style="font-size:11px;padding:5px 10px;white-space:nowrap;" onclick="loadFromSheetArchive(${i})">✏️ Uredi</button>
+            <button class="btn btn-out" style="font-size:11px;padding:5px 10px;white-space:nowrap;" onclick="copyFromSheetArchive(${i})">📋 Kopija</button>
+          </div>
+        </div>`).join('');
+      return;
+    }
+  } catch(e){ console.warn('Sheet arhiva greška:', e); }
+  
+  // Fallback to localStorage
+  const archive = getArchive();
   if(!archive.length){ el.innerHTML='<div style="color:#999;font-size:13px;">Nema spremljenih ponuda.</div>'; return; }
   el.innerHTML = archive.map(a=>`
     <div style="border:1px solid var(--gr);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
@@ -779,6 +813,64 @@ function loadFromArchive(id){
   document.getElementById('cUvod').value = s.client.cUvod||'';
   go(5);
   alert('Ponuda učitana! Možete je pregledati i urediti.');
+}
+
+function loadFromSheetArchive(i){
+  const a = window._sheetArchive[i];
+  if(!a) return;
+  // Restore from localStorage state if available
+  const localArchive = getArchive();
+  const localEntry = localArchive.find(e=>e.num===a['Broj ponude']);
+  if(localEntry && localEntry.state){
+    restoreState(localEntry.state);
+    go(5);
+  } else {
+    // Only basic client data available from Sheet
+    document.getElementById('cN').value = a['Klijent']||'';
+    document.getElementById('cNum').value = a['Broj ponude']||'';
+    document.getElementById('cD').value = a['Datum ponude']||'';
+    alert('Učitani su podaci klijenta. Stavke ponude su dostupne samo ako ste koristili ovaj browser za izradu ponude.');
+    go(3);
+  }
+}
+
+function copyFromSheetArchive(i){
+  const a = window._sheetArchive[i];
+  if(!a) return;
+  const localArchive = getArchive();
+  const localEntry = localArchive.find(e=>e.num===a['Broj ponude']);
+  if(localEntry && localEntry.state){
+    restoreState(localEntry.state);
+    // Generate new quote number for the copy
+    genQuoteNum();
+    go(1);
+    alert('Kopija ponude učitana s novim brojem ponude. Uredite po potrebi.');
+  } else {
+    document.getElementById('cN').value = a['Klijent']||'';
+    genQuoteNum();
+    alert('Učitani su samo podaci klijenta — stavke nisu dostupne iz Sheeta. Odaberite stavke ručno.');
+    go(1);
+  }
+}
+
+function restoreState(state){
+  pkgSlots = state.pkgSlots.map(p=>({
+    naziv:p.naziv,
+    selected:new Set(p.selected),
+    finalPrice:p.finalPrice,
+    priceManual:p.priceManual
+  }));
+  activeSlot=0;
+  const c = state.client;
+  document.getElementById('cN').value = c.cN||'';
+  document.getElementById('cC').value = c.cC||'';
+  document.getElementById('cA').value = c.cA||'';
+  document.getElementById('cO').value = c.cO||'';
+  document.getElementById('cD').value = c.cD||'';
+  document.getElementById('cNum').value = c.cNum||'';
+  document.getElementById('cExp').value = c.cExp||'';
+  document.getElementById('cUvod').value = c.cUvod||'';
+  buildCatalog();
 }
 
 function deleteFromArchive(id){
