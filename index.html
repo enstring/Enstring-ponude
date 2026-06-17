@@ -650,11 +650,13 @@ function saveArchive(arr){
   catch(e){ console.warn('Ne mogu spremiti arhivu:', e); }
 }
 
+function getField(id){ const el=document.getElementById(id); return el?el.value||'':''; }
+
 function saveToArchive(status){
-  const cN = document.getElementById('cN').value||'Klijent';
-  const cNum = document.getElementById('cNum').value||'—';
-  const cD = document.getElementById('cD').value;
-  const cC = document.getElementById('cC').value;
+  const cN = getField('cN')||'Klijent';
+  const cNum = getField('cNum')||'—';
+  const cD = getField('cD');
+  const cC = getField('cC');
   const activePkgs = pkgSlots.filter(s=>s.selected.size>0);
   const sentDate = status==='sent' ? new Date().toISOString().split('T')[0] : '';
   const pkgSummary = activePkgs.map(s=>`${s.naziv} (${s.finalPrice||fmt(getSlotTotal(pkgSlots.indexOf(s)))})`).join(' / ');
@@ -670,7 +672,7 @@ function saveToArchive(status){
       pkgs: activePkgs.map(s=>({naziv:s.naziv,count:s.selected.size,total:s.finalPrice||fmt(getSlotTotal(pkgSlots.indexOf(s)))})),
       state: {
         pkgSlots: pkgSlots.map(s=>({naziv:s.naziv,selected:[...s.selected],finalPrice:s.finalPrice,priceManual:s.priceManual})),
-        client: {cN,cC,cA:document.getElementById('cA').value,cO:document.getElementById('cO').value,cD,cNum,cExp:document.getElementById('cExp').value,cUvod:document.getElementById('cUvod').value},
+        client: {cN,cC,cA:getField('cA'),cO:getField('cO'),cD,cNum,cExp:getField('cExp'),cUvod:getField('cUvod')},
       }
     };
     if(existIdx>=0) archive[existIdx]=entry;
@@ -887,7 +889,7 @@ function resetApp(){
     {naziv:"Paket 3",selected:new Set(),finalPrice:"",priceManual:false},
   ];
   activeSlot=0;
-  ['cN','cC','cA','cO','cNum','cExp','cUvod'].forEach(id=>document.getElementById(id).value='');
+  ['cN','cC','cA','cO','cNum','cExp','cUvod'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('cD').value=new Date().toISOString().split('T')[0];
   buildCatalog();
 }
